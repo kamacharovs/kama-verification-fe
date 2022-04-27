@@ -1,0 +1,55 @@
+﻿@page "/customer"
+@using KamaVerification.UI.Core.Models;
+@using KamaVerification.UI.Core.Services;
+@inject ICustomerRepository _repo;
+
+<PageTitle>Customer</PageTitle>
+
+<h5><b>Create Customer</b></h5>
+
+<EditForm Model="@CustomerDto" OnValidSubmit="@HandleCreateCustomerAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <p>
+        <label>
+            Name:
+            <InputText id="name" @bind-Value="CustomerDto.Name" />
+        </label>
+    </p>
+    <p>
+        <label>
+            Generate API key:
+            <InputSelect @bind-Value="CustomerDto.GenerateApiKey">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+            </InputSelect>
+        </label>
+    </p>
+
+    <h5><b>Email (optional)</b></h5>
+
+    <p>
+        <label>
+            Subject (optional):
+            <InputText id="subject" @bind-Value="CustomerDto.EmailConfig.Subject" />
+        </label>
+    </p>
+    <p>
+        <label>
+            From Email (optional):
+            <InputText id="fromEmail" @bind-Value="CustomerDto.EmailConfig.FromEmail" />
+        </label>
+    </p>
+
+    <button class="btn btn-primary" type="submit">Create</button>
+</EditForm>
+
+@code {
+    private CustomerDto CustomerDto = new();
+
+    public async Task HandleCreateCustomerAsync(EditContext editContext)
+    {
+       await _repo.CreateAsync(CustomerDto);
+    }
+}
