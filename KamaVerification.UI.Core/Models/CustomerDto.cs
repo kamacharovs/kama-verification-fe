@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using KamaVerification.UI.Core.Extensions;
 
 namespace KamaVerification.UI.Core.Models
 {
@@ -8,7 +10,10 @@ namespace KamaVerification.UI.Core.Models
         [StringLength(100, ErrorMessage = "Name is too long.")]
         public string? Name { get; set; }
 
-        public bool? GenerateApiKey { get; set; } = true;
+        [Required]
+        [JsonIgnore]
+        public string? GenerateApiKeyStr { get; set; } = "Yes";
+        public bool? GenerateApiKey => GenerateApiKeyStr?.ToLower() == "yes" ? true : false;
 
         public EmailConfigDto EmailConfig { get; set; } = new EmailConfigDto();
     }
@@ -31,6 +36,7 @@ namespace KamaVerification.UI.Core.Models
 
 
         [Required]
-        public int ExpirationInMinutes { get; set; } = 15;
+        public string ExpirationInMinutesStr { get; set; } = "15";
+        public int? ExpirationInMinutes => string.IsNullOrWhiteSpace(ExpirationInMinutesStr) ? int.Parse(ExpirationInMinutesStr) : null;
     }
 }
