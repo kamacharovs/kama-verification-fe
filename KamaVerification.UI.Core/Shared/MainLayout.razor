@@ -1,17 +1,32 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MainContainer>
+    <HeaderRegion>
+        <Header>
+        </Header>
+    </HeaderRegion>
+    <SideNavigationRegion>
+        <VerticalNav HasIcons="true" Collapsible="true" CollapseAtTop="@atTop" @bind-Collapsed="collapsed">
+            <NavItem Icon="home" href="">
+                Home
+            </NavItem>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
+            <NavGroup Collapsible="true" Collapsed="true" Icon="store">
+                <ItemContent>
+                    Customer
+                </ItemContent>
+                <ChildContent>
+                    <NavItem href="customer">Create Customer</NavItem>
+                </ChildContent>
+            </NavGroup>
+        </VerticalNav>
+    </SideNavigationRegion>
+    <ContentArea>
+        @Body
+    </ContentArea>
+</MainContainer>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+@code {
+    private bool collapsed = false;
+    private bool atTop = true;
+}
