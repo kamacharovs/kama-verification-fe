@@ -18,7 +18,7 @@
     <Text Label="Subject" @bind-Value="customerDto.EmailConfig.Subject" HelpText="Optional"></Text>
     <Text Label="From Email" @bind-Value="customerDto.EmailConfig.FromEmail" HelpText="Optional"></Text>
     <Text Label="From Name" @bind-Value="customerDto.EmailConfig.FromName" HelpText="Optional"></Text>
-    <Text Label="Expiration (in minutes)" @bind-Value="customerDto.EmailConfig.ExpirationInMinutesStr" HelpText="Optional. In minutes"></Text>
+    <Text Label="Expiration (in minutes)" @bind-Value="customerDto.EmailConfig.ExpirationInMinutesStr" HelpText="Optional"></Text>
 
     <Button id="create-btn" State="createBtnState" Outline="true" @onclick="HandleCreateCustomerAsync" Disabled="createBtnDisabled">Create</Button>
 </Form>
