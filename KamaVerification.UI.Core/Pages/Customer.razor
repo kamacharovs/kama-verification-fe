@@ -5,7 +5,13 @@
 
 <PageTitle>Customer</PageTitle>
 
-<h5><b>Create Customer</b></h5>
+<h4><b>Create Customer</b></h4>
+
+<Alert Type="AlertType.Success" Hidden="hideAlert" OnClose="OnCloseAlert">
+    <AlertItem>
+        <AlertText>Successfully added Customer</AlertText>
+    </AlertItem>
+</Alert>
 
 <Form Model="@customerDto" Layout="FormLayout.Horizontal">
     <DataAnnotationsValidator />
@@ -30,19 +36,26 @@
 
     private bool createBtnDisabled => !IsCreateButtonEnabled();
     private LoadingState createBtnState = LoadingState.Default;
+    private bool hideAlert = true;
 
     public async Task HandleCreateCustomerAsync()
     {
+        hideAlert = true;
         createBtnState = LoadingState.Loading;
 
-        await _repo.CreateAsync(customerDto);
-        await Task.Delay(1000);
+        var res = await _repo.CreateAsync(customerDto);
 
         createBtnState = LoadingState.Default;
+        hideAlert = false;
     }
 
     public bool IsCreateButtonEnabled()
     {
         return !string.IsNullOrWhiteSpace(customerDto.Name);
+    }
+
+    public void OnCloseAlert()
+    {
+        hideAlert = true;
     }
 }

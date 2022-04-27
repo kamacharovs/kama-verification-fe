@@ -4,22 +4,24 @@ namespace KamaVerification.UI.Core.Services
 {
     public interface ICustomerRepository
     {
-        Task CreateAsync(CustomerDto customerDto);
+        Task<object> CreateAsync(CustomerDto customerDto);
     }
 
-    public class CustomerRepository : ICustomerRepository
+    public class CustomerRepository : BaseRepository, ICustomerRepository
     {
         private readonly ILogger<CustomerRepository> _logger;
 
         public CustomerRepository(
-            ILogger<CustomerRepository> logger)
+            ILogger<CustomerRepository> logger, 
+            HttpClient httpClient)
+            : base(httpClient)
         {
             _logger = logger;
         }
 
-        public async Task CreateAsync(CustomerDto customerDto)
+        public async Task<object> CreateAsync(CustomerDto customerDto)
         {
-            _logger.LogInformation("Created Customer");
+            return await base.GetAsync<string>("200");
         }
     }
 }
