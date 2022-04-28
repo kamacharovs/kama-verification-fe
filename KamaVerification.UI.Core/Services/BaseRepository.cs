@@ -11,9 +11,11 @@ namespace KamaVerification.UI.Core.Services
             _httpClient = httpClient;
         }
 
-        public async Task<string> GetAsync<T>(string path)
+        public async Task<T> GetAsync<T>(string path)
         {
-            return await _httpClient.GetStringAsync(path);
+            var res = await _httpClient.GetStringAsync(path);
+
+            return JsonSerializer.Deserialize<T>(res);
         }
 
         public async Task<T?> PostAsync<T, TDto>(string path, TDto dto)
