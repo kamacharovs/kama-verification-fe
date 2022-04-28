@@ -11,11 +11,18 @@ namespace KamaVerification.UI.Core.Services
             _httpClient = httpClient;
         }
 
-        public async Task<T> GetAsync<T>(string path)
+        public async Task<string> GetAsync(string path)
         {
-            var res = await _httpClient.GetStringAsync(path);
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"{_httpClient.BaseAddress}{path}")
+            };
 
-            return JsonSerializer.Deserialize<T>(res);
+            var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            return responseBody;
         }
 
         public async Task<T?> PostAsync<T, TDto>(string path, TDto dto)

@@ -4,7 +4,7 @@ using KamaVerification.UI.Core.Extensions;
 
 namespace KamaVerification.UI.Core.Models
 {
-    public class CustomerDto
+    public class CustomerCreate
     {
         [Required]
         [StringLength(100, ErrorMessage = "Name is too long.")]
@@ -15,10 +15,10 @@ namespace KamaVerification.UI.Core.Models
         public string? GenerateApiKeyStr { get; set; } = "Yes";
         public bool? GenerateApiKey => GenerateApiKeyStr?.ToLower() == "yes" ? true : false;
 
-        public EmailConfigDto EmailConfig { get; set; } = new EmailConfigDto();
+        public EmailConfig EmailConfig { get; set; } = new EmailConfig();
     }
 
-    public class EmailConfigDto
+    public class EmailConfig
     {
         [Required]
         [StringLength(100, ErrorMessage = "Name is too long.")]
