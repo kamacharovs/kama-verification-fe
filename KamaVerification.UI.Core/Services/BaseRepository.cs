@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 
 namespace KamaVerification.UI.Core.Services
 {
@@ -25,15 +26,20 @@ namespace KamaVerification.UI.Core.Services
             return responseBody;
         }
 
-        public async Task<T?> PostAsync<T, TDto>(string path, TDto dto)
-            where T : class
+        public async Task<string> PostAsync<TDto>(string path, TDto dto)
             where TDto : class
         {
-            var payload = new StringContent(JsonSerializer.Serialize(dto));
-            var res = await _httpClient.PostAsync(path, payload);
-            var restT = JsonSerializer.Deserialize<T>(await res.Content.ReadAsStringAsync());
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri($"{_httpClient.BaseAddress}{path}"),
+                Content = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json")
+            };
 
-            return restT;
+            var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            return responseBody;
         }
     }
 }

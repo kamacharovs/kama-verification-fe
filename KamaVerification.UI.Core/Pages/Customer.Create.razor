@@ -7,12 +7,6 @@
 
 <h4><b>Create Customer</b></h4>
 
-<Alert Type="AlertType.Success" Hidden="hideAlert" OnClose="OnCloseAlert">
-    <AlertItem>
-        <AlertText>Successfully added Customer</AlertText>
-    </AlertItem>
-</Alert>
-
 <Form Model="@customerCreate" Layout="FormLayout.Horizontal">
     <DataAnnotationsValidator />
     <ValidationSummary />
@@ -27,6 +21,8 @@
     <Text Label="Expiration (in minutes)" @bind-Value="customerCreate.EmailConfig.ExpirationInMinutesStr" HelpText="Optional"></Text>
 
     <Button Id="create-btn" State="createBtnState" Outline="true" @onclick="HandleCreateCustomerAsync" Disabled="createBtnDisabled">Create</Button>
+
+    <Textarea Label="Customer Result" @bind-Value="customerCreate.Result"></Textarea>
 </Form>
 
 @code {
@@ -40,13 +36,10 @@
 
     public async Task HandleCreateCustomerAsync()
     {
-        hideAlert = true;
+        customerCreate.Result = null;
         createBtnState = LoadingState.Loading;
-
-        var res = await _repo.CreateAsync(customerCreate);
-
+        customerCreate.Result = await _repo.CreateAsync(customerCreate);
         createBtnState = LoadingState.Default;
-        hideAlert = false;
     }
 
     public bool IsCreateButtonEnabled()
