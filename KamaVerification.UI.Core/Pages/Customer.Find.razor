@@ -16,7 +16,13 @@
 <Datagrid TRowData="Customer" Items="customers">
     <DatagridColumn Title="Id" TRowData="Customer" Field="c => c.CustomerId" CanSort="true" />
     <DatagridColumn Title="Name" TRowData="Customer" Field="c => c.Name" CanSort="true" />
-    <DatagridColumn TRowData="Customer" Title="Creation Date">@context.CreatedAt.ToShortDateString()</DatagridColumn>
+    <DatagridColumn Title="Email Subject" TRowData="Customer" Field="c => c.EmailConfig.Subject" CanSort="true" />
+    <DatagridColumn Title="Email From" TRowData="Customer" Field="c => c.EmailConfig.FromEmail" CanSort="true" />
+    <DatagridColumn Title="Email Name" TRowData="Customer" Field="c => c.EmailConfig.FromName" CanSort="true" />
+    <DatagridColumn Title="Email Expiration (in minutes)" TRowData="Customer" Field="c => c.EmailConfig.ExpirationInMinutes" CanSort="true" />
+    <DatagridColumn Title="API Key" TRowData="Customer" Field="c => c.ApiKey.ApiKey" CanSort="true" />
+    <DatagridColumn TRowData="Customer" Title="Created At Date">@context.CreatedAt.ToShortDateString()</DatagridColumn>
+    <DatagridColumn TRowData="Customer" Title="Updated At Date">@context.UpdatedAt.ToShortDateString()</DatagridColumn>
 </Datagrid>
 
 @code {
@@ -28,8 +34,11 @@
     public async Task HandleFindCustomerAsync()
     {
         findButtonState = LoadingState.Loading;
+
         var customer = await _repo.FindAsync(customerFind.Name);
-        customers.Add(customer);
+
+        if (customers.FirstOrDefault(x => x.Name == customer.Name) is null) customers.Add(customer);
+
         findButtonState = LoadingState.Default;
     }
 

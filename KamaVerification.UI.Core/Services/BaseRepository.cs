@@ -6,13 +6,17 @@ namespace KamaVerification.UI.Core.Services
     public abstract class BaseRepository
     {
         private readonly HttpClient _httpClient;
+        private readonly JsonSerializerOptions _serializerOptions;
 
         public BaseRepository(HttpClient httpClient)
         {
             _httpClient = httpClient;
+            _serializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         }
 
-        public async Task<T> GetAsync<T>(string path)
+        public async Task<T> GetAsync<T>(
+            string path,
+            JsonSerializerOptions? jsonSerializerOptions = null)
         {
             var request = new HttpRequestMessage
             {
@@ -22,10 +26,9 @@ namespace KamaVerification.UI.Core.Services
 
             var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseBodyDes = JsonSerializer.Deserialize<T>(responseBody, jsonSerializerOptions ?? _serializerOptions);
 
-            if (responseBody is null) throw new ArgumentNullException(nameof(responseBody));
-
-            return JsonSerializer.Deserialize<T>(responseBody);
+            return responseBodyDes;
         }
 
         public async Task<string> PostAsync<TDto>(string path, TDto dto)
