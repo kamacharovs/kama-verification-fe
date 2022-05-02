@@ -21,8 +21,8 @@
     <DatagridColumn Title="Email Name" TRowData="Customer" Field="c => c.EmailConfig.FromName" CanSort="true" />
     <DatagridColumn Title="Email Expiration (in minutes)" TRowData="Customer" Field="c => c.EmailConfig.ExpirationInMinutes" CanSort="true" />
     <DatagridColumn Title="API Key" TRowData="Customer" Field="c => c.ApiKey.ApiKey" CanSort="true" />
-    <DatagridColumn TRowData="Customer" Title="Created At Date">@context.CreatedAt.ToShortDateString()</DatagridColumn>
-    <DatagridColumn TRowData="Customer" Title="Updated At Date">@context.UpdatedAt.ToShortDateString()</DatagridColumn>
+    <DatagridColumn Title="Created At Date" TRowData="Customer">@context.CreatedAt.ToShortDateString()</DatagridColumn>
+    <DatagridColumn Title="Updated At Date" TRowData="Customer">@context.UpdatedAt.ToShortDateString()</DatagridColumn>
 </Datagrid>
 
 @code {
@@ -36,7 +36,9 @@
         findButtonState = LoadingState.Loading;
 
         var customer = await _repo.FindAsync(customerFind.Name);
-
+        
+        if (customer.ApiKey is null) customer.ApiKey = new CustomerApiKey();
+        if (customer.EmailConfig is null) customer.EmailConfig = new CustomerEmailConfig();
         if (customers.FirstOrDefault(x => x.Name == customer.Name) is null) customers.Add(customer);
 
         findButtonState = LoadingState.Default;

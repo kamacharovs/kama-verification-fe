@@ -31,20 +31,26 @@ namespace KamaVerification.UI.Core.Services
             return responseBodyDes;
         }
 
-        public async Task<string> PostAsync<TDto>(string path, TDto dto)
+        public async Task<T> PostAsync<T, TDto>
+            (string path, 
+            TDto dto,
+            JsonSerializerOptions? serializeJsonSerializerOptions = null,
+            JsonSerializerOptions? deserializeJsonSerializerOptions = null)
+            where T : class
             where TDto : class
         {
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
                 RequestUri = new Uri($"{_httpClient.BaseAddress}{path}"),
-                Content = new StringContent(JsonSerializer.Serialize(dto), Encoding.UTF8, "application/json")
+                Content = new StringContent(JsonSerializer.Serialize(dto, deserializeJsonSerializerOptions ?? _serializerOptions), Encoding.UTF8, "application/json")
             };
 
             var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var responseBodyDes = JsonSerializer.Deserialize<T>(responseBody, deserializeJsonSerializerOptions ?? _serializerOptions);
 
-            return responseBody;
+            return responseBodyDes;
         }
     }
 }

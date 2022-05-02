@@ -5,7 +5,7 @@ namespace KamaVerification.UI.Core.Services
     public interface ICustomerRepository
     {
         Task<Customer> FindAsync(string name);
-        Task<string> CreateAsync(CustomerCreate customerCreate);
+        Task<Customer> CreateAsync(CustomerCreate customerCreate);
     }
 
     public class CustomerRepository : BaseRepository, ICustomerRepository
@@ -25,7 +25,7 @@ namespace KamaVerification.UI.Core.Services
             return await base.GetAsync<Customer>($"v1/customer/{name}");
         }
 
-        public async Task<string> CreateAsync(CustomerCreate customerCreate)
+        public async Task<Customer> CreateAsync(CustomerCreate customerCreate)
         {
             if (customerCreate.EmailConfig?.Subject is null
                 || customerCreate.EmailConfig?.FromEmail is null
@@ -33,7 +33,7 @@ namespace KamaVerification.UI.Core.Services
                 || customerCreate.EmailConfig?.ExpirationInMinutesStr is null)
                 customerCreate.EmailConfig = null!;
 
-            return await base.PostAsync<CustomerCreate>("v1/customer", customerCreate);
+            return await base.PostAsync<Customer, CustomerCreate>("v1/customer", customerCreate);
         }
     }
 }
