@@ -7,7 +7,5 @@ namespace KamaVerification.UI.Core.Models
         [Required]
         [StringLength(200, ErrorMessage = "Name is too long.")]
         public string? Name { get; set; }
-
-        public string? Result { get; set; }
     }
 }

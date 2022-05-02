@@ -12,7 +12,7 @@ namespace KamaVerification.UI.Core.Services
             _httpClient = httpClient;
         }
 
-        public async Task<string> GetAsync(string path)
+        public async Task<T> GetAsync<T>(string path)
         {
             var request = new HttpRequestMessage
             {
@@ -23,7 +23,9 @@ namespace KamaVerification.UI.Core.Services
             var response = await _httpClient.SendAsync(request).ConfigureAwait(false);
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            return responseBody;
+            if (responseBody is null) throw new ArgumentNullException(nameof(responseBody));
+
+            return JsonSerializer.Deserialize<T>(responseBody);
         }
 
         public async Task<string> PostAsync<TDto>(string path, TDto dto)

@@ -11,20 +11,25 @@
     <Text Label="Name" @bind-Value="customerFind.Name" HelpText="@($"The customer's name to look for is {customerFind.Name}")"></Text>
 
     <Button Id="find-button" State="findButtonState" Outline="true" @onclick="HandleFindCustomerAsync" Disabled="findButtonDisabled">Find</Button>
-
-    <Textarea Label="Customer Result" @bind-Value="customerFind.Result"></Textarea>
 </Form>
+
+<Datagrid TRowData="Customer" Items="customers">
+    <DatagridColumn Title="Id" TRowData="Customer" Field="c => c.CustomerId" CanSort="true" />
+    <DatagridColumn Title="Name" TRowData="Customer" Field="c => c.Name" CanSort="true" />
+    <DatagridColumn TRowData="Customer" Title="Creation Date">@context.CreatedAt.ToShortDateString()</DatagridColumn>
+</Datagrid>
 
 @code {
     private CustomerFind customerFind = new();
+    private List<Customer> customers = new List<Customer>();
     private LoadingState findButtonState = LoadingState.Default;
     private bool findButtonDisabled => !IsFindButtonEnabled();
 
     public async Task HandleFindCustomerAsync()
     {
-        customerFind.Result = null;
         findButtonState = LoadingState.Loading;
-        customerFind.Result = await _repo.FindAsync(customerFind.Name);
+        var customer = await _repo.FindAsync(customerFind.Name);
+        customers.Add(customer);
         findButtonState = LoadingState.Default;
     }
 
