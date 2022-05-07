@@ -94,7 +94,7 @@ jobs:
         path: app/publish
 
   build_container:
-    needs: build_core
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - name: download app-publish
