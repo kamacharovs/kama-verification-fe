@@ -1,0 +1,115 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Terraform
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+
+    - name: setup terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.1.8
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: terraform format
+      id: fmt
+      run: terraform fmt -check
+
+    - name: terraform init
+      id: init
+      run: terraform init
+
+    - name: terraform validate
+      id: validate
+      run: terraform validate
+
+    - name: terraform plan
+      id: plan
+      run: terraform plan
+
+    - name: update pull request
+      uses: actions/github-script@0.9.0
+      if: github.event_name == 'pull_request'
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+
+          <details><summary>Show Plan</summary>
+
+          \`\`\`\n
+          ${process.env.PLAN}
+          \`\`\`
+
+          </details>
+
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+          
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: setup
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: restore
+      run: dotnet restore KamaVerification.UI.Core/KamaVerification.UI.Core.csproj
+      
+    - name: build
+      run: dotnet build -c Release KamaVerification.UI.Core/KamaVerification.UI.Core.csproj --no-restore
+
+    - name: publish
+      run: dotnet publish -c Release -o app/publish
+
+    - name: archive app/publish
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-publish
+        path: app/publish
+
+  build_container:
+    needs: build_core
+    runs-on: ubuntu-latest
+    steps:
+    - name: download app-publish
+      uses: actions/download-artifact@v3
+      with:
+        name: app-publish
+
+    - name: docker buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: docker build
+      if: github.event_name == 'pull_request'
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: ./Dockerfile
+        push: false
+        tags: gkama/kama-verification-fe:latest
