@@ -1,0 +1,51 @@
+﻿@page "/customer/find"
+@using KamaVerification.UI.Core.Models;
+@using KamaVerification.UI.Core.Services;
+@inject ICustomerRepository _repo;
+
+<PageTitle>Customer | Find</PageTitle>
+
+<h4><b>Find Customer by name</b></h4>
+
+<Form Model="@customerFind">
+    <Text Label="Name" @bind-Value="customerFind.Name" HelpText="@($"The customer's name to look for is {customerFind.Name}")"></Text>
+
+    <Button Id="find-button" State="findButtonState" Outline="true" @onclick="HandleFindCustomerAsync" Disabled="findButtonDisabled">Find</Button>
+</Form>
+
+<Datagrid TRowData="Customer" Items="customers">
+    <DatagridColumn Title="Id" TRowData="Customer" Field="c => c.CustomerId" CanSort="true" />
+    <DatagridColumn Title="Name" TRowData="Customer" Field="c => c.Name" CanSort="true" />
+    <DatagridColumn Title="Email Subject" TRowData="Customer" Field="c => c.EmailConfig.Subject" CanSort="true" />
+    <DatagridColumn Title="Email From" TRowData="Customer" Field="c => c.EmailConfig.FromEmail" CanSort="true" />
+    <DatagridColumn Title="Email Name" TRowData="Customer" Field="c => c.EmailConfig.FromName" CanSort="true" />
+    <DatagridColumn Title="Email Expiration (in minutes)" TRowData="Customer" Field="c => c.EmailConfig.ExpirationInMinutes" CanSort="true" />
+    <DatagridColumn Title="API Key" TRowData="Customer" Field="c => c.ApiKey.ApiKey" CanSort="true" />
+    <DatagridColumn Title="Created At Date" TRowData="Customer">@context.CreatedAt.ToShortDateString()</DatagridColumn>
+    <DatagridColumn Title="Updated At Date" TRowData="Customer">@context.UpdatedAt.ToShortDateString()</DatagridColumn>
+</Datagrid>
+
+@code {
+    private CustomerFind customerFind = new();
+    private List<Customer> customers = new List<Customer>();
+    private LoadingState findButtonState = LoadingState.Default;
+    private bool findButtonDisabled => !IsFindButtonEnabled();
+
+    public async Task HandleFindCustomerAsync()
+    {
+        findButtonState = LoadingState.Loading;
+
+        var customer = await _repo.FindAsync(customerFind.Name);
+        
+        if (customer.ApiKey is null) customer.ApiKey = new CustomerApiKey();
+        if (customer.EmailConfig is null) customer.EmailConfig = new CustomerEmailConfig();
+        if (customers.FirstOrDefault(x => x.Name == customer.Name) is null) customers.Add(customer);
+
+        findButtonState = LoadingState.Default;
+    }
+
+    public bool IsFindButtonEnabled()
+    {
+        return !string.IsNullOrWhiteSpace(customerFind.Name);
+    }
+}

@@ -1,0 +1,60 @@
+﻿@page "/customer/create"
+@using KamaVerification.UI.Core.Models;
+@using KamaVerification.UI.Core.Services;
+@inject ICustomerRepository _repo;
+
+<PageTitle>Customer | Create</PageTitle>
+
+<h4><b>Create Customer</b></h4>
+
+<Form Model="@customerCreate" Layout="FormLayout.Horizontal">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <Text Label="Name" @bind-Value="customerCreate.Name" HelpText="@($"Required. The name will be {customerCreate.Name}")" />  
+    <Select Label="Generate API Key" @bind-Value="customerCreate.GenerateApiKeyStr" Items="generateApiKeyOptions" HelpText="@("Required")" />
+
+    <h5>Email (Optional)</h5>
+    <Text Label="Subject" @bind-Value="customerCreate.EmailConfig.Subject" HelpText="Optional"></Text>
+    <Text Label="From Email" @bind-Value="customerCreate.EmailConfig.FromEmail" HelpText="Optional"></Text>
+    <Text Label="From Name" @bind-Value="customerCreate.EmailConfig.FromName" HelpText="Optional"></Text>
+    <Text Label="Expiration (in minutes)" @bind-Value="customerCreate.EmailConfig.ExpirationInMinutesStr" HelpText="Optional"></Text>
+
+    <Button Id="create-btn" State="createBtnState" Outline="true" @onclick="HandleCreateCustomerAsync" Disabled="createBtnDisabled">Create</Button>
+</Form>
+
+<Datagrid TRowData="Customer" Items="customers">
+    <DatagridColumn Title="Id" TRowData="Customer" Field="c => c.CustomerId" CanSort="true" />
+    <DatagridColumn Title="Name" TRowData="Customer" Field="c => c.Name" CanSort="true" />
+    <DatagridColumn Title="Email Subject" TRowData="Customer" Field="c => c.EmailConfig.Subject" CanSort="true" />
+    <DatagridColumn Title="Email From" TRowData="Customer" Field="c => c.EmailConfig.FromEmail" CanSort="true" />
+    <DatagridColumn Title="Email Name" TRowData="Customer" Field="c => c.EmailConfig.FromName" CanSort="true" />
+    <DatagridColumn Title="Email Expiration (in minutes)" TRowData="Customer" Field="c => c.EmailConfig.ExpirationInMinutes" CanSort="true" />
+    <DatagridColumn Title="API Key" TRowData="Customer" Field="c => c.ApiKey.ApiKey" CanSort="true" />
+    <DatagridColumn Title="Created At Date" TRowData="Customer">@context.CreatedAt.ToShortDateString()</DatagridColumn>
+    <DatagridColumn Title="Updated At Date" TRowData="Customer">@context.UpdatedAt.ToShortDateString()</DatagridColumn>
+</Datagrid>
+
+@code {
+    private CustomerCreate customerCreate = new();
+    private List<Customer> customers = new List<Customer>();
+    private string[] generateApiKeyOptions = new string[] { "Yes", "No" };
+    private bool createBtnDisabled => !IsCreateButtonEnabled();
+    private LoadingState createBtnState = LoadingState.Default;
+
+    public async Task HandleCreateCustomerAsync()
+    {
+        createBtnState = LoadingState.Loading;
+
+        var customer = await _repo.CreateAsync(customerCreate);
+        
+        if (customers.FirstOrDefault(x => x.Name == customer.Name) is null) customers.Add(customer);
+
+        createBtnState = LoadingState.Default;
+    }
+
+    public bool IsCreateButtonEnabled()
+    {
+        return !string.IsNullOrWhiteSpace(customerCreate.Name);
+    }
+}

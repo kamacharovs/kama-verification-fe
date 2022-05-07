@@ -1,0 +1,33 @@
+﻿@inherits LayoutComponentBase
+
+<MainContainer>
+    <HeaderRegion>
+        <Header>
+        </Header>
+    </HeaderRegion>
+    <SideNavigationRegion>
+        <VerticalNav HasIcons="true" Collapsible="true" CollapseAtTop="@atTop" @bind-Collapsed="collapsed">
+            <NavItem Icon="home" href="">
+                Home
+            </NavItem>
+
+            <NavGroup Collapsible="true" Collapsed="true" Icon="bars">
+                <ItemContent>
+                    Customer
+                </ItemContent>
+                <ChildContent>
+                    <NavItem href="customer/find">Find by name</NavItem>
+                    <NavItem href="customer/create">Create Customer</NavItem>
+                </ChildContent>
+            </NavGroup>
+        </VerticalNav>
+    </SideNavigationRegion>
+    <ContentArea>
+        @Body
+    </ContentArea>
+</MainContainer>
+
+@code {
+    private bool collapsed = false;
+    private bool atTop = true;
+}
