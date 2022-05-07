@@ -87,13 +87,13 @@ jobs:
       run: dotnet build -c Release KamaVerification.UI.Core/KamaVerification.UI.Core.csproj --no-restore
 
     - name: publish
-      run: dotnet publish -c Release -o app/publish
+      run: dotnet publish KamaVerification.UI.Core/KamaVerification.UI.Core.csproj -c Release -o app/publish/KamaVerification.UI.Core
 
     - name: archive app/publish
       uses: actions/upload-artifact@v3
       with:
         name: app-publish
-        path: app/publish
+        path: app/publish//KamaVerification.UI.Core
 
   build_container:
     needs: build
@@ -106,6 +106,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: app-publish
+        path: app/publish//KamaVerification.UI.Core
 
     - name: docker buildx
       uses: docker/setup-buildx-action@v1
