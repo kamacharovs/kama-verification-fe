@@ -6,6 +6,7 @@ namespace KamaVerification.UI.Core.Services
     {
         Task<Customer> FindAsync(string name);
         Task<Customer> CreateAsync(CustomerCreate customerCreate);
+        Task<TokenResponse> GetTokenAsync(TokenRequest tokenRequest);
     }
 
     public class CustomerRepository : BaseRepository, ICustomerRepository
@@ -34,6 +35,11 @@ namespace KamaVerification.UI.Core.Services
                 customerCreate.EmailConfig = null!;
 
             return await base.PostAsync<Customer, CustomerCreate>("v1/customer", customerCreate);
+        }
+
+        public async Task<TokenResponse> GetTokenAsync(TokenRequest tokenRequest)
+        {
+            return await base.PostAsync<TokenResponse, TokenRequest>("v1/customer/token", tokenRequest);
         }
     }
 }
