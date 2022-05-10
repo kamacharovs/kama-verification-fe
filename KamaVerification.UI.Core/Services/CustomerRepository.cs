@@ -8,7 +8,7 @@ namespace KamaVerification.UI.Core.Services
         Customer Customer { get; }
         Task<Customer> FindAsync(string name);
         Task<Customer> CreateAsync(CustomerCreate customerCreate);
-        Task<TokenResponse> GetTokenAsync(TokenRequest tokenRequest);
+        Task<TokenResponse?> GetTokenAsync(TokenRequest tokenRequest);
     }
 
     public class CustomerRepository : BaseRepository, ICustomerRepository
@@ -30,6 +30,23 @@ namespace KamaVerification.UI.Core.Services
             return Customer != null;
         }
 
+        public async Task<TokenResponse?> GetTokenAsync(TokenRequest tokenRequest)
+        {
+            var tokenResponse = await base.PostAsync<TokenResponse, TokenRequest>("v1/customer/token", tokenRequest);
+
+            if (tokenResponse?.AccessToken is not null)
+            {
+                Customer = await GetAsync(tokenResponse.AccessToken);
+            }
+
+            return tokenResponse;
+        }
+
+        public async Task<Customer> GetAsync(string accessToken)
+        {
+            return await base.GetAsync<Customer>("v1/customer/me", accessToken);
+        }
+
         public async Task<Customer> FindAsync(string name)
         {
             return await base.GetAsync<Customer>($"v1/customer/{name}");
@@ -44,13 +61,6 @@ namespace KamaVerification.UI.Core.Services
                 customerCreate.EmailConfig = null!;
 
             return await base.PostAsync<Customer, CustomerCreate>("v1/customer", customerCreate);
-        }
-
-        public async Task<TokenResponse> GetTokenAsync(TokenRequest tokenRequest)
-        {
-            var tokenResponse = await base.PostAsync<TokenResponse, TokenRequest>("v1/customer/token", tokenRequest);
-            Customer = new() { Name = "I'M LOGGED IN" };
-            return tokenResponse;
         }
     }
 }
