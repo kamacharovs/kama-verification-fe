@@ -1,12 +1,25 @@
 ﻿@inherits LayoutComponentBase
+@inject ICustomerRepository CustomerRepository
+@inject NavigationManager NavigationManager
 
 <MainContainer>
     <HeaderRegion>
-        <Header>
-            <Actions>
-                <NavItem href="customer/login">Login</NavItem>
-            </Actions>
-        </Header>
+        @if (!CustomerRepository.IsLoggedIn())
+        {
+            <Header>
+                <Actions>
+                    <NavItem href="customer/login">Login</NavItem>
+                </Actions>
+            </Header>
+        }
+        else
+        {
+            <Header>
+                <Actions>
+                    <NavItem href="">@(CustomerRepository.Customer.Name)</NavItem>
+                </Actions>
+            </Header>
+        }
     </HeaderRegion>
     <SideNavigationRegion>
         <VerticalNav HasIcons="true" Collapsible="true" CollapseAtTop="@atTop" @bind-Collapsed="collapsed">
@@ -14,15 +27,18 @@
                 Home
             </NavItem>
 
-            <NavGroup Collapsible="true" Collapsed="true" Icon="bars">
-                <ItemContent>
-                    Customer
-                </ItemContent>
-                <ChildContent>
-                    <NavItem href="customer/find">Find by name</NavItem>
-                    <NavItem href="customer/create">Create Customer</NavItem>
-                </ChildContent>
-            </NavGroup>
+            @if (CustomerRepository.IsLoggedIn())
+            {
+                <NavGroup Collapsible="true" Collapsed="true" Icon="bars">
+                    <ItemContent>
+                        Customer
+                    </ItemContent>
+                    <ChildContent>
+                        <NavItem href="customer/find">Find by name</NavItem>
+                        <NavItem href="customer/create">Create Customer</NavItem>
+                    </ChildContent>
+                </NavGroup>
+            }
         </VerticalNav>
     </SideNavigationRegion>
     <ContentArea>
@@ -33,4 +49,12 @@
 @code {
     private bool collapsed = false;
     private bool atTop = true;
+
+    protected override void OnInitialized()
+    {
+        if (CustomerRepository.Customer != null)
+        {
+            NavigationManager.NavigateTo("");
+        }
+    }
 }

@@ -4,6 +4,8 @@ namespace KamaVerification.UI.Core.Services
 {
     public interface ICustomerRepository
     {
+        bool IsLoggedIn();
+        Customer Customer { get; }
         Task<Customer> FindAsync(string name);
         Task<Customer> CreateAsync(CustomerCreate customerCreate);
         Task<TokenResponse> GetTokenAsync(TokenRequest tokenRequest);
@@ -13,12 +15,19 @@ namespace KamaVerification.UI.Core.Services
     {
         private readonly ILogger<CustomerRepository> _logger;
 
+        public Customer Customer { get; private set; }
+
         public CustomerRepository(
             ILogger<CustomerRepository> logger, 
             HttpClient httpClient)
             : base(httpClient)
         {
             _logger = logger;
+        }
+
+        public bool IsLoggedIn()
+        {
+            return Customer != null;
         }
 
         public async Task<Customer> FindAsync(string name)
@@ -39,7 +48,9 @@ namespace KamaVerification.UI.Core.Services
 
         public async Task<TokenResponse> GetTokenAsync(TokenRequest tokenRequest)
         {
-            return await base.PostAsync<TokenResponse, TokenRequest>("v1/customer/token", tokenRequest);
+            var tokenResponse = await base.PostAsync<TokenResponse, TokenRequest>("v1/customer/token", tokenRequest);
+            Customer = new() { Name = "I'M LOGGED IN" };
+            return tokenResponse;
         }
     }
 }
