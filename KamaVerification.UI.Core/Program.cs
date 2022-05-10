@@ -12,6 +12,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 services.AddScoped<ICustomerRepository, CustomerRepository>()
+    .AddScoped<ILocalStorageRepository, LocalStorageRepository>()
     .AddHttpClient(config)
     .AddOptions()
     .AddLogging();

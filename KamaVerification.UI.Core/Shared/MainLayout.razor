@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@using KamaVerification.UI.Core.Models;
+@inject ILocalStorageRepository LocalStorageRepository
 @inject ICustomerRepository CustomerRepository
 @inject NavigationManager NavigationManager
 
@@ -50,10 +52,13 @@
     private bool collapsed = false;
     private bool atTop = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        if (CustomerRepository.Customer != null)
+        var customer = await LocalStorageRepository.GetItemAsync<Customer>("customer");
+
+        if (customer is not null)
         {
+            CustomerRepository.SetCustomer(customer);
             NavigationManager.NavigateTo("");
         }
     }
