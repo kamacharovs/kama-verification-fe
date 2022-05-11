@@ -1,4 +1,5 @@
 ﻿@page "/customer/login"
+@using KamaVerification.UI.Core.Extensions
 @using KamaVerification.UI.Core.Models;
 @using KamaVerification.UI.Core.Services;
 @inject ICustomerRepository _repo;
@@ -10,8 +11,8 @@
 <h4><b>Login by API Key</b></h4>
 <Form Model="@tokenRequest" Layout="FormLayout.Horizontal">
     <Password Label="API Key"
-          @bind-Value="tokenRequest.ApiKey"
-          HelpText="One way to login"></Password>
+              @bind-Value="tokenRequest.ApiKey"
+              HelpText="One way to login"></Password>
 
     <Button Id="login-button"
             State="loginButtonState"
@@ -49,7 +50,14 @@
 
         if (loggedIn)
         {
-            NavigationManager.NavigateTo("");
+            string navigateTo = "";
+
+            if (NavigationManager.Uri.Contains("returnUrl"))
+            {
+                NavigationManager.TryGetQueryString<string>("returnUrl", out navigateTo);
+            }
+
+            NavigationManager.NavigateTo(navigateTo);
         }
         else
         {

@@ -45,15 +45,12 @@ namespace KamaVerification.UI.Core.Services
         {
             var tokenResponse = await GetTokenAsync(tokenRequest);
 
-            if (tokenResponse?.AccessToken is not null)
-            {
-                Customer = await GetAsync(tokenResponse.AccessToken);
+            if (tokenResponse?.AccessToken is null) return false;
+            
+            Customer = await GetAsync(tokenResponse.AccessToken);
 
-                await _localStorageRepository.SetItemAsync("customer", Customer);
-                await _localStorageRepository.SetItemAsync("customer.token", tokenResponse.AccessToken);
-            }
-            else
-                return false;
+            await _localStorageRepository.SetItemAsync("customer", Customer);
+            await _localStorageRepository.SetItemAsync("customer.token", tokenResponse.AccessToken);
 
             return true;
         }
