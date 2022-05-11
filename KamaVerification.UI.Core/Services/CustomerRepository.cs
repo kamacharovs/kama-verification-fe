@@ -7,6 +7,8 @@ namespace KamaVerification.UI.Core.Services
         void SetCustomer(Customer customer);
         bool IsLoggedIn();
         Customer? Customer { get; }
+        Task<bool> LoginAsync(TokenRequest tokenRequest);
+        Task LogoutAsync();
         Task<Customer> FindAsync(string name);
         Task<Customer> CreateAsync(CustomerCreate customerCreate);
         Task<TokenResponse?> GetTokenAsync(TokenRequest tokenRequest);
@@ -39,18 +41,34 @@ namespace KamaVerification.UI.Core.Services
             return Customer != null;
         }
 
-        public async Task<TokenResponse?> GetTokenAsync(TokenRequest tokenRequest)
+        public async Task<bool> LoginAsync(TokenRequest tokenRequest)
         {
-            var tokenResponse = await base.PostAsync<TokenResponse, TokenRequest>("v1/customer/token", tokenRequest);
+            var tokenResponse = await GetTokenAsync(tokenRequest);
 
             if (tokenResponse?.AccessToken is not null)
             {
                 Customer = await GetAsync(tokenResponse.AccessToken);
 
                 await _localStorageRepository.SetItemAsync("customer", Customer);
+                await _localStorageRepository.SetItemAsync("customer.token", tokenResponse.AccessToken);
             }
+            else
+                return false;
 
-            return tokenResponse;
+            return true;
+        }
+
+        public async Task LogoutAsync()
+        {
+            this.Customer = null;
+
+            await _localStorageRepository.RemoveItemAsync("customer");
+            await _localStorageRepository.RemoveItemAsync("customer.token");
+        }
+
+        public async Task<TokenResponse?> GetTokenAsync(TokenRequest tokenRequest)
+        {
+            return await base.PostAsync<TokenResponse, TokenRequest>("v1/customer/token", tokenRequest);
         }
 
         public async Task<Customer> GetAsync(string accessToken)

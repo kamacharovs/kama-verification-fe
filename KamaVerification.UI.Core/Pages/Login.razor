@@ -45,9 +45,9 @@
         result = null;
         loginButtonState = LoadingState.Loading;
 
-        var tokenResponse = await _repo.GetTokenAsync(tokenRequest);
+        var loggedIn = await _repo.LoginAsync(tokenRequest);
 
-        if (tokenResponse.AccessToken != null)
+        if (loggedIn)
         {
             NavigationManager.NavigateTo("");
         }

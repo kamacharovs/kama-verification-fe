@@ -18,8 +18,9 @@
         {
             <Header>
                 <Actions>
-                    <NavItem href="">@(CustomerRepository.Customer.Name)</NavItem>
-                </Actions>
+                    <NavItem href="">@(CustomerRepository.Customer!.Name)</NavItem>
+                    <NavItem @onclick="HandleLogoutAsync">Logout</NavItem>
+                 </Actions>
             </Header>
         }
     </HeaderRegion>
@@ -61,5 +62,10 @@
             CustomerRepository.SetCustomer(customer);
             NavigationManager.NavigateTo("");
         }
+    }
+
+    public async Task HandleLogoutAsync()
+    {
+        await CustomerRepository.LogoutAsync();
     }
 }
