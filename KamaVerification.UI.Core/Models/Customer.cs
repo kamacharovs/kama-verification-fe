@@ -5,6 +5,7 @@
         public int CustomerId { get; set; }
         public Guid PublicKey { get; set; }
         public string? Name { get; set; }
+        public string? RoleName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public virtual CustomerApiKey? ApiKey { get; set; }

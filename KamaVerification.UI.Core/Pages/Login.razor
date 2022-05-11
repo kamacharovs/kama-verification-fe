@@ -48,23 +48,10 @@
 
         var loggedIn = await _repo.LoginAsync(tokenRequest);
 
-        if (loggedIn)
-        {
-            string navigateTo = "";
-
-            if (NavigationManager.Uri.Contains("returnUrl"))
-            {
-                NavigationManager.TryGetQueryString<string>("returnUrl", out navigateTo);
-            }
-
-            NavigationManager.NavigateTo(navigateTo);
-        }
-        else
-        {
-            result = "Unable to login. Please try again";
-        }
+        if (!loggedIn) result = "Unable to login. Please try again";
 
         loginButtonState = LoadingState.Default;
+        result = null;
     }
 
     public bool IsLoginButtonEnabled()

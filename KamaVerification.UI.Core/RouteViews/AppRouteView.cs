@@ -17,7 +17,9 @@ namespace KamaVerification.UI.Core.RouteViews
 
         protected override void Render(RenderTreeBuilder builder)
         {
-            var authorize = Attribute.GetCustomAttribute(RouteData.PageType, typeof(AuthorizeAttribute)) != null;
+            var authorizeAttribute = Attribute.GetCustomAttribute(RouteData.PageType, typeof(AuthorizeAttribute));
+            var authorize = authorizeAttribute != null;
+
             if (authorize && !CustomerRepository!.IsLoggedIn())
             {
                 var returnUrl = WebUtility.UrlEncode(new Uri(NavigationManager!.Uri).PathAndQuery);

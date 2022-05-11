@@ -1,4 +1,7 @@
-﻿using KamaVerification.UI.Core.Models;
+﻿using KamaVerification.UI.Core.Constants;
+using KamaVerification.UI.Core.Extensions;
+using KamaVerification.UI.Core.Models;
+using Microsoft.AspNetCore.Components;
 
 namespace KamaVerification.UI.Core.Services
 {
@@ -6,9 +9,12 @@ namespace KamaVerification.UI.Core.Services
     {
         void SetCustomer(Customer customer);
         bool IsLoggedIn();
+        bool IsAdmin();
+        bool IsAuthorized(string? roles);
         Customer? Customer { get; }
         Task<bool> LoginAsync(TokenRequest tokenRequest);
         Task LogoutAsync();
+        Task RefreshAsync();
         Task<Customer> FindAsync(string name);
         Task<Customer> CreateAsync(CustomerCreate customerCreate);
         Task<TokenResponse?> GetTokenAsync(TokenRequest tokenRequest);
@@ -18,17 +24,20 @@ namespace KamaVerification.UI.Core.Services
     {
         private readonly ILogger<CustomerRepository> _logger;
         private readonly ILocalStorageRepository _localStorageRepository;
+        private readonly NavigationManager _navigationManager;
 
         public Customer? Customer { get; private set; }
 
         public CustomerRepository(
             ILogger<CustomerRepository> logger, 
             ILocalStorageRepository localStorageRepository,
+            NavigationManager navigationManager,
             HttpClient httpClient)
             : base(httpClient)
         {
             _logger = logger;
             _localStorageRepository = localStorageRepository;
+            _navigationManager = navigationManager;
         }
 
         public void SetCustomer(Customer customer)
@@ -41,6 +50,18 @@ namespace KamaVerification.UI.Core.Services
             return Customer != null;
         }
 
+        public bool IsAdmin()
+        {
+            return Customer?.RoleName == CustomerRoles.Admin;
+        }
+
+        public bool IsAuthorized(string? roles)
+        {
+            if (roles is null) return true;
+
+            return roles.Contains(Customer?.RoleName);
+        }
+
         public async Task<bool> LoginAsync(TokenRequest tokenRequest)
         {
             var tokenResponse = await GetTokenAsync(tokenRequest);
@@ -49,8 +70,15 @@ namespace KamaVerification.UI.Core.Services
             
             Customer = await GetAsync(tokenResponse.AccessToken);
 
+            SetCustomer(Customer);
             await _localStorageRepository.SetItemAsync("customer", Customer);
+            await _localStorageRepository.SetItemAsync("customer.apikey", tokenRequest.ApiKey);
             await _localStorageRepository.SetItemAsync("customer.token", tokenResponse.AccessToken);
+
+            var navigateTo = "";
+            if (_navigationManager.Uri.Contains("returnUrl")) _navigationManager.TryGetQueryString<string>("returnUrl", out navigateTo);
+
+            _navigationManager.NavigateTo(navigateTo);
 
             return true;
         }
@@ -60,7 +88,21 @@ namespace KamaVerification.UI.Core.Services
             this.Customer = null;
 
             await _localStorageRepository.RemoveItemAsync("customer");
+            await _localStorageRepository.RemoveItemAsync("customer.apikey");
             await _localStorageRepository.RemoveItemAsync("customer.token");
+
+            _navigationManager.NavigateTo("customer/login");
+        }
+
+        public async Task RefreshAsync()
+        {
+            var customerApiKey = await _localStorageRepository.GetItemAsync<string>("customer.apikey");
+
+            if (customerApiKey is not null
+                && !IsLoggedIn())
+            {
+                await LoginAsync(new TokenRequest { ApiKey = customerApiKey });
+            }
         }
 
         public async Task<TokenResponse?> GetTokenAsync(TokenRequest tokenRequest)

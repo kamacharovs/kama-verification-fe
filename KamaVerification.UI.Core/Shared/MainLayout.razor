@@ -19,9 +19,9 @@
             <Header>
                 <Actions>
                     <NavItem href="">@(CustomerRepository.Customer!.Name)</NavItem>
-                    <NavItem href="" @onclick="HandleLogoutAsync">Logout</NavItem>
-                 </Actions>
-            </Header>
+                        <NavItem href="" @onclick="HandleLogoutAsync">Logout</NavItem>
+                    </Actions>
+                </Header>
         }
     </HeaderRegion>
     <SideNavigationRegion>
@@ -30,7 +30,7 @@
                 Home
             </NavItem>
 
-            @if (CustomerRepository.IsLoggedIn())
+            @if (CustomerRepository.IsLoggedIn() && CustomerRepository.IsAdmin())
             {
                 <NavGroup Collapsible="true" Collapsed="true" Icon="bars">
                     <ItemContent>

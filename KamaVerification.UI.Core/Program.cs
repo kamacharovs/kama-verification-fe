@@ -15,6 +15,7 @@ services.AddScoped<ICustomerRepository, CustomerRepository>()
     .AddScoped<ILocalStorageRepository, LocalStorageRepository>()
     .AddHttpClient(config)
     .AddOptions()
+    .AddAuthorizationCore()
     .AddLogging();
 
 await builder.Build().RunAsync();
