@@ -1,5 +1,5 @@
 ﻿@page "/customer/create"
-@attribute [Authorize]
+@attribute [Authorize(Roles = CustomerRoles.Admin)]
 @using KamaVerification.UI.Core.Constants
 @using KamaVerification.UI.Core.Models;
 @using KamaVerification.UI.Core.Services;

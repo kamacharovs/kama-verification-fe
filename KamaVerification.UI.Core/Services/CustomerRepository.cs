@@ -2,6 +2,7 @@
 using KamaVerification.UI.Core.Extensions;
 using KamaVerification.UI.Core.Models;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace KamaVerification.UI.Core.Services
 {
@@ -24,6 +25,7 @@ namespace KamaVerification.UI.Core.Services
     {
         private readonly ILogger<CustomerRepository> _logger;
         private readonly ILocalStorageRepository _localStorageRepository;
+        private readonly AuthenticationStateProvider _authenticationStateProvider;
         private readonly NavigationManager _navigationManager;
 
         public Customer? Customer { get; private set; }
@@ -32,12 +34,14 @@ namespace KamaVerification.UI.Core.Services
             ILogger<CustomerRepository> logger, 
             ILocalStorageRepository localStorageRepository,
             NavigationManager navigationManager,
+            AuthenticationStateProvider authenticationStateProvider,
             HttpClient httpClient)
             : base(httpClient)
         {
             _logger = logger;
             _localStorageRepository = localStorageRepository;
             _navigationManager = navigationManager;
+            _authenticationStateProvider = authenticationStateProvider;
         }
 
         public void SetCustomer(Customer customer)
@@ -75,6 +79,8 @@ namespace KamaVerification.UI.Core.Services
             await _localStorageRepository.SetItemAsync("customer.apikey", tokenRequest.ApiKey);
             await _localStorageRepository.SetItemAsync("customer.token", tokenResponse.AccessToken);
 
+            ((ApiAuthenticationRepository)_authenticationStateProvider).MarkUserAsAuthenticated(tokenResponse.AccessToken);
+
             var navigateTo = "";
             if (_navigationManager.Uri.Contains("returnUrl")) _navigationManager.TryGetQueryString<string>("returnUrl", out navigateTo);
 
@@ -90,6 +96,8 @@ namespace KamaVerification.UI.Core.Services
             await _localStorageRepository.RemoveItemAsync("customer");
             await _localStorageRepository.RemoveItemAsync("customer.apikey");
             await _localStorageRepository.RemoveItemAsync("customer.token");
+
+            ((ApiAuthenticationRepository)_authenticationStateProvider).MarkUserAsLoggedOut();
 
             _navigationManager.NavigateTo("customer/login");
         }

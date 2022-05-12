@@ -6,31 +6,31 @@
 
 <MainContainer>
     <HeaderRegion>
-        @if (!CustomerRepository.IsLoggedIn())
-        {
-            <Header>
-                <Actions>
-                    <NavItem href="customer/login">Login</NavItem>
-                </Actions>
-            </Header>
-        }
-        else
-        {
-            <Header>
-                <Actions>
-                    <NavItem href="">@(CustomerRepository.Customer!.Name)</NavItem>
-                        <NavItem href="" @onclick="HandleLogoutAsync">Logout</NavItem>
-                    </Actions>
-                </Header>
-        }
-    </HeaderRegion>
-    <SideNavigationRegion>
-        <VerticalNav HasIcons="true" Collapsible="true" CollapseAtTop="@atTop" @bind-Collapsed="collapsed">
-            <NavItem Icon="home" href="">
-                Home
-            </NavItem>
+        <AuthorizeView>
+            <Authorized>
+                <Header>
+                    <Actions>
+                        <NavItem href="">@(CustomerRepository?.Customer?.Name)</NavItem>
+                            <NavItem href="" @onclick="HandleLogoutAsync">Logout</NavItem>
+                        </Actions>
+                    </Header>
+                </Authorized>
+                <NotAuthorized>
+                    <Header>
+                        <Actions>
+                            <NavItem href="customer/login">Login</NavItem>
+                        </Actions>
+                    </Header>
+                </NotAuthorized>
+            </AuthorizeView>
+        </HeaderRegion>
+        <SideNavigationRegion>
+            <VerticalNav HasIcons="true" Collapsible="true" CollapseAtTop="@atTop" @bind-Collapsed="collapsed">
+                <NavItem Icon="home" href="">
+                    Home
+                </NavItem>
 
-            @if (CustomerRepository.IsLoggedIn() && CustomerRepository.IsAdmin())
+                @if (CustomerRepository.IsLoggedIn() && CustomerRepository.IsAdmin())
             {
                 <NavGroup Collapsible="true" Collapsed="true" Icon="bars">
                     <ItemContent>
@@ -50,6 +50,8 @@
 </MainContainer>
 
 @code {
+    [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
+
     private bool collapsed = false;
     private bool atTop = true;
 

@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using KamaVerification.UI.Core.Extensions
 @using KamaVerification.UI.Core.Models;
+@using KamaVerification.UI.Core.Constants;
 @using KamaVerification.UI.Core.Services;
 @inject ICustomerRepository CustomerRepository;
 @inject NavigationManager NavigationManager
@@ -11,13 +12,14 @@
 
 Welcome to your Kama Verification App
 
-@if (CustomerRepository.IsAdmin())
-{
-    <ul>
-        <li><a href="customer/find">Find customer by name</a></li>
-        <li><a href="customer/create">Created customer</a></li>
-    </ul>
-}
+<AuthorizeView Roles="@(CustomerRoles.Admin)">
+    <Authorized>
+        <ul>
+            <li><a href="customer/find">Find customer by name</a></li>
+            <li><a href="customer/create">Created customer</a></li>
+        </ul>
+    </Authorized>
+</AuthorizeView>
 
 @code {
     protected override async Task OnInitializedAsync()
