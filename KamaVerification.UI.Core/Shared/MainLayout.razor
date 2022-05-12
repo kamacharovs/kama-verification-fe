@@ -1,25 +1,47 @@
 ﻿@inherits LayoutComponentBase
+@using KamaVerification.UI.Core.Models;
+@inject ILocalStorageRepository LocalStorageRepository
+@inject ICustomerRepository CustomerRepository
+@inject NavigationManager NavigationManager
 
 <MainContainer>
     <HeaderRegion>
-        <Header>
-        </Header>
-    </HeaderRegion>
-    <SideNavigationRegion>
-        <VerticalNav HasIcons="true" Collapsible="true" CollapseAtTop="@atTop" @bind-Collapsed="collapsed">
-            <NavItem Icon="home" href="">
-                Home
-            </NavItem>
+        <AuthorizeView>
+            <Authorized>
+                <Header>
+                    <Actions>
+                        <NavItem href="">@(CustomerRepository?.Customer?.Name)</NavItem>
+                            <NavItem href="" @onclick="HandleLogoutAsync">Logout</NavItem>
+                        </Actions>
+                    </Header>
+                </Authorized>
+                <NotAuthorized>
+                    <Header>
+                        <Actions>
+                            <NavItem href="customer/login">Login</NavItem>
+                        </Actions>
+                    </Header>
+                </NotAuthorized>
+            </AuthorizeView>
+        </HeaderRegion>
+        <SideNavigationRegion>
+            <VerticalNav HasIcons="true" Collapsible="true" CollapseAtTop="@atTop" @bind-Collapsed="collapsed">
+                <NavItem Icon="home" href="">
+                    Home
+                </NavItem>
 
-            <NavGroup Collapsible="true" Collapsed="true" Icon="bars">
-                <ItemContent>
-                    Customer
-                </ItemContent>
-                <ChildContent>
-                    <NavItem href="customer/find">Find by name</NavItem>
-                    <NavItem href="customer/create">Create Customer</NavItem>
-                </ChildContent>
-            </NavGroup>
+                @if (CustomerRepository.IsLoggedIn() && CustomerRepository.IsAdmin())
+            {
+                <NavGroup Collapsible="true" Collapsed="true" Icon="bars">
+                    <ItemContent>
+                        Customer
+                    </ItemContent>
+                    <ChildContent>
+                        <NavItem href="customer/find">Find by name</NavItem>
+                        <NavItem href="customer/create">Create Customer</NavItem>
+                    </ChildContent>
+                </NavGroup>
+            }
         </VerticalNav>
     </SideNavigationRegion>
     <ContentArea>
@@ -28,6 +50,24 @@
 </MainContainer>
 
 @code {
+    [CascadingParameter] private Task<AuthenticationState> authenticationStateTask { get; set; }
+
     private bool collapsed = false;
     private bool atTop = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var customer = await LocalStorageRepository.GetItemAsync<Customer>("customer");
+
+        if (customer is not null)
+        {
+            CustomerRepository.SetCustomer(customer);
+            NavigationManager.NavigateTo("");
+        }
+    }
+
+    public async Task HandleLogoutAsync()
+    {
+        await CustomerRepository.LogoutAsync();
+    }
 }

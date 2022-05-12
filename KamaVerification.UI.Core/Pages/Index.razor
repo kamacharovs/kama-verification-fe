@@ -1,7 +1,29 @@
 ﻿@page "/"
+@using KamaVerification.UI.Core.Extensions
+@using KamaVerification.UI.Core.Models;
+@using KamaVerification.UI.Core.Constants;
+@using KamaVerification.UI.Core.Services;
+@inject ICustomerRepository CustomerRepository;
+@inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
 
 <h1>Kama Verification</h1>
 
 Welcome to your Kama Verification App
+
+<AuthorizeView Roles="@(CustomerRoles.Admin)">
+    <Authorized>
+        <ul>
+            <li><a href="customer/find">Find customer by name</a></li>
+            <li><a href="customer/create">Created customer</a></li>
+        </ul>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await CustomerRepository.RefreshAsync();
+    }
+}

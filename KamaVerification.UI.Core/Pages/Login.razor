@@ -1,0 +1,62 @@
+﻿@page "/customer/login"
+@using KamaVerification.UI.Core.Extensions
+@using KamaVerification.UI.Core.Models;
+@using KamaVerification.UI.Core.Services;
+@inject ICustomerRepository _repo;
+@inject NavigationManager NavigationManager
+
+<PageTitle>Customer | Login</PageTitle>
+
+
+<h4><b>Login by API Key</b></h4>
+
+<Form Model="@tokenRequest" Layout="FormLayout.Horizontal">
+    <Password Label="API Key"
+              @bind-Value="tokenRequest.ApiKey"
+              HelpText="One way to login"></Password>
+
+    <Button Id="login-button"
+            State="loginButtonState"
+            Outline="true"
+            @onclick="HandleLoginAsync"
+            Disabled="loginButtonDisabled">
+        Login
+    </Button>
+</Form>
+
+@if (!string.IsNullOrEmpty(result))
+{
+    <Label Status="Status.Danger">@(result)</Label>
+}
+
+
+@code {
+    private TokenRequest tokenRequest = new();
+    private string? result;
+    private LoadingState loginButtonState = LoadingState.Default;
+    private bool loginButtonDisabled => !IsLoginButtonEnabled();
+
+    protected override void OnInitialized()
+    {
+        result = null;
+        loginButtonState = LoadingState.Default;
+    }
+
+    public async Task HandleLoginAsync()
+    {
+        result = null;
+        loginButtonState = LoadingState.Loading;
+
+        var loggedIn = await _repo.LoginAsync(tokenRequest);
+
+        if (!loggedIn) result = "Unable to login. Please try again";
+
+        loginButtonState = LoadingState.Default;
+        result = null;
+    }
+
+    public bool IsLoginButtonEnabled()
+    {
+        return !string.IsNullOrWhiteSpace(tokenRequest.ApiKey);
+    }
+}
