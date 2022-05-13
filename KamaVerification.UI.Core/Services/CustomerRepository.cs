@@ -16,14 +16,17 @@ namespace KamaVerification.UI.Core.Services
         Task<bool> LoginAsync(TokenRequest tokenRequest);
         Task LogoutAsync();
         Task RefreshAsync();
+        Task<bool> LoginEmailAsync();
         Task<Customer> FindAsync(string name);
         Task<Customer> CreateAsync(CustomerCreate customerCreate);
         Task<TokenResponse?> GetTokenAsync(TokenRequest tokenRequest);
+        Task<TokenResponse?> GetEmailTokenAsync(TokenRequest tokenRequest);
     }
 
     public class CustomerRepository : BaseRepository, ICustomerRepository
     {
         private readonly ILogger<CustomerRepository> _logger;
+        private readonly IConfiguration _config;
         private readonly ILocalStorageRepository _localStorageRepository;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
         private readonly NavigationManager _navigationManager;
@@ -32,6 +35,7 @@ namespace KamaVerification.UI.Core.Services
 
         public CustomerRepository(
             ILogger<CustomerRepository> logger, 
+            IConfiguration config,
             ILocalStorageRepository localStorageRepository,
             NavigationManager navigationManager,
             AuthenticationStateProvider authenticationStateProvider,
@@ -39,10 +43,14 @@ namespace KamaVerification.UI.Core.Services
             : base(httpClient)
         {
             _logger = logger;
+            _config = config;
             _localStorageRepository = localStorageRepository;
             _navigationManager = navigationManager;
             _authenticationStateProvider = authenticationStateProvider;
         }
+
+        private string BaseUrl => _config["KamaVerification:BaseUrl"];
+        private string BaseEmailUrl => _config["KamaVerification:BaseEmailUrl"];
 
         public void SetCustomer(Customer customer)
         {
@@ -113,19 +121,44 @@ namespace KamaVerification.UI.Core.Services
             }
         }
 
+        public async Task<bool> LoginEmailAsync()
+        {
+            if (await _localStorageRepository.GetItemAsync<string>("customer.email.token") is not null)
+                return true;
+
+            var customerApiKey = await _localStorageRepository.GetItemAsync<string>("customer.apikey");
+
+            if (customerApiKey is null)
+                return false;
+
+            var tokenResponse = await GetEmailTokenAsync(new TokenRequest { ApiKey = customerApiKey });
+
+            if (tokenResponse?.AccessToken is null)
+                return false;
+
+            await _localStorageRepository.SetItemAsync("customer.email.token", tokenResponse.AccessToken);
+
+            return true;
+        }
+
+        #region API Calls
         public async Task<TokenResponse?> GetTokenAsync(TokenRequest tokenRequest)
         {
-            return await base.PostAsync<TokenResponse, TokenRequest>("v1/customer/token", tokenRequest);
+            return await base.PostAsync<TokenResponse, TokenRequest>($"{BaseUrl}/v1/customer/token", tokenRequest);
+        }
+        public async Task<TokenResponse?> GetEmailTokenAsync(TokenRequest tokenRequest)
+        {
+            return await base.PostAsync<TokenResponse, TokenRequest>($"{BaseEmailUrl}/v1/email/token", tokenRequest);
         }
 
         public async Task<Customer> GetAsync(string accessToken)
         {
-            return await base.GetAsync<Customer>("v1/customer/me", accessToken);
+            return await base.GetAsync<Customer>($"{BaseUrl}/v1/customer/me", accessToken);
         }
 
         public async Task<Customer> FindAsync(string name)
         {
-            return await base.GetAsync<Customer>($"v1/customer/{name}");
+            return await base.GetAsync<Customer>($"{BaseUrl}/v1/customer/{name}");
         }
 
         public async Task<Customer> CreateAsync(CustomerCreate customerCreate)
@@ -136,7 +169,8 @@ namespace KamaVerification.UI.Core.Services
                 || customerCreate.EmailConfig?.ExpirationInMinutesStr is null)
                 customerCreate.EmailConfig = null!;
 
-            return await base.PostAsync<Customer, CustomerCreate>("v1/customer", customerCreate);
+            return await base.PostAsync<Customer, CustomerCreate>($"{BaseUrl}/v1/customer", customerCreate);
         }
+        #endregion
     }
 }

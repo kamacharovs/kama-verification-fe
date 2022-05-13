@@ -23,7 +23,7 @@ namespace KamaVerification.UI.Core.Services
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri($"{_httpClient.BaseAddress}{path}")
+                RequestUri = new Uri($"{path}")
             };
 
             if (!string.IsNullOrWhiteSpace(token))
@@ -49,7 +49,7 @@ namespace KamaVerification.UI.Core.Services
             var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
-                RequestUri = new Uri($"{_httpClient.BaseAddress}{path}"),
+                RequestUri = new Uri($"{path}"),
                 Content = new StringContent(JsonSerializer.Serialize(dto, deserializeJsonSerializerOptions ?? _serializerOptions), Encoding.UTF8, "application/json")
             };
 

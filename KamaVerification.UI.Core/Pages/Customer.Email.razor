@@ -1,0 +1,18 @@
+﻿@page "/customer/email"
+@attribute [Authorize]
+@using KamaVerification.UI.Core.Constants;
+@using KamaVerification.UI.Core.Models;
+@using KamaVerification.UI.Core.Services;
+@inject ICustomerRepository CustomerRepository;
+
+<PageTitle>Customer | Email</PageTitle>
+
+<h4><b>Send an email to an user</b></h4>
+
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await CustomerRepository.LoginEmailAsync();
+    }
+}
